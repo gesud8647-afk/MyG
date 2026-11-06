@@ -38,3 +38,11 @@ Questi test Swift e la compilazione Xcode NON sono stati eseguiti nell’ambient
 12. Firma scaduta e reinstallazione con lo stesso Apple ID/Bundle ID: esportare comunque un backup prima di aggiornamenti importanti.
 
 La v0.1 è un prototipo: nessuna prova commerciale, approvazione App Store, garanzia di precisione GPS o validazione della domanda di mercato è dichiarata.
+
+## Correzione CreatureView (dal log ricevuto)
+
+Il log del primo job GitHub conferma PASS dei test delle regole e dello store. La build dell’app si è fermata su CreatureView.swift: il compilatore non riusciva a verificare l’espressione del body nei tempi previsti.
+
+Correzione: TimelineView/Canvas ridotti a chiamate semplici; geometria e disegno separati in funzioni con tipi CGFloat/Double espliciti. Conservate cinque forme, colori, animazione, sonno e descrizione VoiceOver. Aggiunto controllo dimensioni Canvas e protezione dell’indice forma.
+
+La build completa dopo la correzione resta da eseguire su GitHub; nessun successo Xcode successivo è dichiarato da questi controlli strutturali.
