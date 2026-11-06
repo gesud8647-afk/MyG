@@ -1,101 +1,53 @@
-name: My G - Crea IPA
+name: My G 2 - Crea IPA
 
 on:
   push:
+    branches: [main, master]
   workflow_dispatch:
+    inputs:
+      google_maps:
+        description: 'Includi Google Maps (richiede secret GOOGLE_MAPS_API_KEY)'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+
+concurrency:
+  group: myg-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     name: Compilazione iPhone
     runs-on: macos-15
-    timeout-minutes: 20
-
+    timeout-minutes: 25
     steps:
-      - name: Scarica il repository
-        uses: actions/checkout@v4
-
-      - name: Verifica Xcode
-        run: xcodebuild -version
-
-      - name: Compila e crea IPA non firmato
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mkdir -p "$GITHUB_WORKSPACE/dist"
-
-          PROJECT="$(find "$GITHUB_WORKSPACE" \
-            -type d -name 'MyG.xcodeproj' \
-            -not -path '*/.git/*' \
-            -print -quit)"
-
-          if [[ -z "$PROJECT" ]]; then
-            echo "::error::MyG.xcodeproj non trovato nel repository."
-            exit 1
-          fi
-
-          echo "Progetto trovato: $PROJECT"
-
-          xcodebuild \
-            -project "$PROJECT" \
-            -scheme MyG \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            -derivedDataPath "$RUNNER_TEMP/MyGBuild" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            build 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
-
-          APP="$RUNNER_TEMP/MyGBuild/Build/Products/Release-iphoneos/MyG.app"
-
-          if [[ ! -d "$APP" ]]; then
-            echo "::error::La compilazione non ha prodotto MyG.app."
-            exit 1
-          fi
-
-          PLATFORM=$(/usr/libexec/PlistBuddy \
-            -c 'Print :CFBundleSupportedPlatforms:0' \
-            "$APP/Info.plist")
-
-          if [[ "$PLATFORM" != "iPhoneOS" ]]; then
-            echo "::error::Il risultato non è un'app per iPhone fisico."
-            exit 1
-          fi
-
-          lipo "$APP/MyG" -verify_arch arm64
-
-          PACKAGE="$RUNNER_TEMP/MyGPackage"
-          mkdir -p "$PACKAGE/Payload"
-          ditto "$APP" "$PACKAGE/Payload/MyG.app"
-
-          cd "$PACKAGE"
-          /usr/bin/zip -qry \
-            "$GITHUB_WORKSPACE/dist/MyG-unsigned.ipa" \
-            Payload
-
-          /usr/bin/unzip -t \
-            "$GITHUB_WORKSPACE/dist/MyG-unsigned.ipa"
-
-          echo "IPA non firmato creato correttamente."
-
-      - name: Rendi scaricabile IPA
-        uses: actions/upload-artifact@v4
+      - name: Scarica repository
+        uses: actions/checkout@v5
         with:
-          name: MyG-IPA-da-firmare
+          persist-credentials: false
+      - name: Compila, verifica e crea IPA
+        shell: bash
+        env:
+          ENABLE_GOOGLE_MAPS: ${{ github.event_name == 'workflow_dispatch' && inputs.google_maps && 'true' || 'false' }}
+          GOOGLE_MAPS_API_KEY: ${{ github.event_name == 'workflow_dispatch' && inputs.google_maps && secrets.GOOGLE_MAPS_API_KEY || '' }}
+        run: |
+          set -o pipefail
+          bash scripts/build-unsigned-ipa.sh 2>&1 | tee build.log
+      - name: Scarica IPA da firmare
+        uses: actions/upload-artifact@v6
+        with:
+          name: MyG-2-IPA-da-firmare
           path: dist/MyG-unsigned.ipa
           if-no-files-found: error
           retention-days: 7
-
-      - name: Rendi scaricabile il log
+      - name: Conserva log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: MyG-log-compilazione
+          name: MyG-2-log-compilazione
           path: build.log
           if-no-files-found: ignore
           retention-days: 7
