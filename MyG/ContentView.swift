@@ -1,178 +1,152 @@
 import SwiftUI
-import UIKit
 
-private struct ShareFile: Identifiable {
-    let id = UUID()
-    let url: URL
+extension Color {
+    static let mygBackground = Color(red: 0.035, green: 0.055, blue: 0.085)
+}
+extension View {
+    func mygCard() -> some View {
+        self.padding().frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 18))
+    }
 }
 
 struct ContentView: View {
     @StateObject private var scanner = BluetoothScanner()
-    @Environment(\.scenePhase) private var scenePhase
-    @AppStorage("myg.signature") private var signature = ""
-    @State private var message = ""
-    @State private var selected: UUID?
-    @State private var shareFile: ShareFile?
-    @State private var error: String?
-    @State private var shareStatus = ""
+    @StateObject private var store = DeviceStore()
+    @Environment(\.scenePhase) private var phase
     @State private var query = ""
+    @State private var erase = false
+    @AppStorage("myg.googleConsent") private var googleConsent = false
 
-    private var devices: [NearbyDevice] {
-        scanner.devices.filter {
-            query.isEmpty || $0.name.localizedCaseInsensitiveContains(query)
-        }.sorted { ($0.rssi ?? -999) > ($1.rssi ?? -999) }
+    private var visible: [NearbyDevice] {
+        scanner.devices.filter { query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) }
+            .sorted { ($0.rssi ?? -999) > ($1.rssi ?? -999) }
     }
-    private var selectedDevice: NearbyDevice? {
-        scanner.devices.first { $0.id == selected }
-    }
-
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
-                    HStack {
-                        Image(systemName: "dot.radiowaves.left.and.right")
-                            .font(.largeTitle).foregroundStyle(.mint)
-                        VStack(alignment: .leading) {
-                            Text("MY G").font(.largeTitle.bold())
-                            Text("Segnali vicini. Parole tue.").foregroundStyle(.secondary)
-                        }
-                    }
-                    scanCard
-                    deviceList
-                    composer
-                    Text("La scansione mostra solo periferiche BLE rilevabili, non tutti i telefoni. I nomi non verificano l’identità. Il segnale non indica direzione o distanza precisa. Nessuna connessione ai dispositivi viene effettuata.")
-                        .font(.footnote).foregroundStyle(.secondary)
-                }.padding()
-            }
-            .background(Color(red: 0.035, green: 0.055, blue: 0.085))
-            .navigationTitle("My G").navigationBarTitleDisplayMode(.inline)
-            .sheet(item: $shareFile, onDismiss: { shareFile = nil }) { file in
-                SystemShare(url: file.url) { completed in
-                    shareStatus = completed ? "Condivisione completata secondo iOS." : "Condivisione annullata o non completata."
-                }
-            }
-            .alert("Impossibile preparare il messaggio", isPresented: Binding(
-                get: { error != nil }, set: { if !$0 { error = nil } })) {
-                    Button("OK", role: .cancel) { error = nil }
-                } message: { Text(error ?? "") }
-            .onChange(of: scenePhase) { phase in
-                if phase != .active { scanner.stop() }
-            }
+        TabView {
+            NavigationStack { nearby }.tabItem { Label("Vicini", systemImage: "dot.radiowaves.left.and.right") }
+            NavigationStack { accessories }.tabItem { Label("Accessori", systemImage: "switch.2") }
+            NavigationStack { MessageView() }.tabItem { Label("Messaggio", systemImage: "paperplane") }
+            NavigationStack { settings }.tabItem { Label("Info", systemImage: "info.circle") }
         }.tint(.mint)
+            .onChange(of: phase) { value in if value != .active { scanner.pauseForBackground() } }
     }
 
-    private var scanCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label(scanner.scanning ? "IN ASCOLTO" : "SCANNER BLUETOOTH",
-                  systemImage: scanner.scanning ? "waveform" : "antenna.radiowaves.left.and.right")
-                .font(.headline).foregroundStyle(.mint)
-            Text(scanner.status).font(.subheadline)
-            HStack {
-                Button(scanner.scanning ? "Ferma" : "Avvia scansione") {
-                    if scanner.scanning { scanner.stop() } else { scanner.start() }
-                }.buttonStyle(.borderedProminent)
-                Button("Cancella risultati") { scanner.clear(); selected = nil }
-                    .buttonStyle(.bordered).disabled(scanner.devices.isEmpty)
-            }
-        }.padding().frame(maxWidth: .infinity, alignment: .leading)
-            .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 20))
+    private var nearby: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack(spacing: 14) {
+                    Image("MyGLogo").resizable().scaledToFit().frame(width: 64, height: 64)
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                    VStack(alignment: .leading) {
+                        Text("MY G / 02").font(.title.bold())
+                        Text("Esplora. Scegli. Segui il segnale.").font(.subheadline).foregroundStyle(.secondary)
+                    }
+                }
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(scanner.status)
+                    HStack {
+                        Button(scanner.scanning ? "Ferma ricerca" : "Cerca dispositivi") {
+                            if scanner.scanning { scanner.stop() } else { scanner.start() }
+                        }.buttonStyle(.borderedProminent)
+                        Button("Svuota") { scanner.clear() }
+                            .disabled(scanner.scanning || scanner.devices.isEmpty)
+                    }
+                }.mygCard()
+                TextField("Cerca per nome", text: $query).textFieldStyle(.roundedBorder)
+                Text("Dispositivi vicini · \(scanner.devices.count)").font(.title3.bold())
+                if visible.isEmpty {
+                    Text("Avvia la ricerca vicino a un dispositivo BLE che trasmette advertising. Non tutti i telefoni e accessori sono rilevabili.")
+                        .foregroundStyle(.secondary).mygCard()
+                }
+                ForEach(visible) { d in
+                    NavigationLink {
+                        DeviceDetailView(scanner: scanner, store: store, id: d.id)
+                    } label: { DeviceRow(device: d, calibration: store.calibration(d.id)) }
+                    .buttonStyle(.plain)
+                }
+                Text("Nomi non verificati. Distanza stimata dal segnale, senza direzione. Tocca un risultato per aprire Segui segnale e la mappa.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }.padding()
+        }.background(Color.mygBackground).navigationTitle("Dispositivi vicini").navigationBarTitleDisplayMode(.inline)
     }
 
-    private var deviceList: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Dispositivi rilevati · \(scanner.devices.count)").font(.title3.bold())
-            TextField("Filtra per nome", text: $query).textFieldStyle(.roundedBorder)
-            if devices.isEmpty {
-                Text(scanner.scanning ? "In attesa di segnali BLE…" : "Nessun risultato. Avvia la scansione vicino a una periferica BLE accesa.")
-                    .foregroundStyle(.secondary).padding(.vertical)
-            }
-            ForEach(devices) { device in
-                Button { selected = device.id } label: {
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Image(systemName: selected == device.id ? "checkmark.circle.fill" : "circle")
-                            Text(device.name).font(.headline).multilineTextAlignment(.leading)
-                            Spacer()
-                            Text(device.rssi.map { "\($0) dBm" } ?? "N/D").font(.caption.monospaced())
+    private var accessories: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                Text("I tuoi accessori").font(.title.bold())
+                Text("Aggiungi un accessorio dalla sua scheda. È disponibile solo la lettura della batteria BLE standard, con verifica al collegamento.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                if store.accessories.isEmpty {
+                    Label("Nessun accessorio configurato", systemImage: "switch.2").mygCard()
+                }
+                ForEach(store.accessories) { a in
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(a.name).font(.headline)
+                        Text("\(a.manufacturer) · \(a.model)")
+                        Text(a.protocolName).font(.caption).foregroundStyle(.secondary)
+                        Text(scanner.connectionStatus[a.id] ?? "Compatibilità da verificare")
+                            .font(.subheadline)
+                        if let level = scanner.battery[a.id], scanner.connected.contains(a.id) {
+                            Label("Batteria: \(level)%", systemImage: "battery.100percent")
+                            Button("Aggiorna batteria") { scanner.refreshBattery(a.id) }
                         }
-                        Text(device.id.uuidString).font(.caption2.monospaced()).foregroundStyle(.secondary)
                         HStack {
-                            Text("Ultimo segnale")
-                            Text(device.lastSeen, style: .time)
-                        }.font(.caption).foregroundStyle(.secondary)
-                        if !device.services.isEmpty {
-                            Text("Servizi: " + device.services.joined(separator: ", "))
-                                .font(.caption2).foregroundStyle(.secondary)
-                        }
-                    }.padding().frame(maxWidth: .infinity, alignment: .leading)
-                        .background(selected == device.id ? Color.mint.opacity(0.12) : Color.white.opacity(0.05),
-                                    in: RoundedRectangle(cornerRadius: 14))
-                }.buttonStyle(.plain)
-            }
-        }
+                            Button("Collega") { scanner.connectBattery(a.id) }
+                                .disabled(scanner.connected.contains(a.id))
+                            Button("Scollega") { scanner.disconnect(a.id) }
+                        }.buttonStyle(.bordered)
+                        Button("Rimuovi accessorio", role: .destructive) {
+                            scanner.disconnect(a.id); store.remove(a.id)
+                        }.font(.caption)
+                    }.mygCard()
+                }
+                Text("Telecomando accendi/spegni: serve marca, modello e documentazione del protocollo del tuo accessorio. Nessun pulsante di comando finto.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }.padding()
+        }.background(Color.mygBackground).navigationTitle("Accessori configurati").navigationBarTitleDisplayMode(.inline)
     }
 
-    private var composer: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Il tuo messaggio").font(.title3.bold())
-            if let device = selectedDevice {
-                Label("Riferimento BLE: \(device.name)", systemImage: "dot.radiowaves.right")
-                    .font(.subheadline).foregroundStyle(.mint)
+    private var settings: some View {
+        Form {
+            Section("My G 2.0") {
+                Image("MyGLogo").resizable().scaledToFit().frame(width: 96, height: 96)
+                Text("RSSI ≠ GPS. La mappa mostra il tuo iPhone e un raggio teorico. Non localizza precisamente altri dispositivi.")
+                Text("La ricerca termina dopo 60 secondi; Segui segnale dopo 10 minuti. Quando l’app lascia il primo piano, scansione e connessioni si fermano.")
             }
-            Text("Il riferimento BLE non seleziona il destinatario AirDrop. Lo sceglierai nel pannello Apple.")
-                .font(.footnote).foregroundStyle(.secondary)
-            TextEditor(text: $message).frame(height: 140).padding(8)
-                .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
-                .accessibilityLabel("Testo del messaggio")
-            TextField("Firma o tuo numero (facoltativo)", text: $signature)
-                .textFieldStyle(.roundedBorder).textContentType(.telephoneNumber)
-            Text("Firma dichiarata da te, senza verifica del numero. Viene inclusa nel file condiviso.")
-                .font(.caption).foregroundStyle(.secondary)
-            Button(action: prepareShare) {
-                Label("Condividi → AirDrop", systemImage: "square.and.arrow.up")
-                    .frame(maxWidth: .infinity).padding(.vertical, 5)
-            }.buttonStyle(.borderedProminent)
-                .disabled(message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            Text("Nel pannello di condivisione scegli AirDrop e poi il destinatario. Riceverà un file di testo da accettare. Puoi anche scegliere altre app.")
-                .font(.footnote).foregroundStyle(.secondary)
-            if !shareStatus.isEmpty { Text(shareStatus).font(.footnote) }
-            Button("Elimina firma e bozza", role: .destructive) {
-                signature = ""; message = ""; shareStatus = ""
-            }.font(.footnote)
-        }.padding().background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 20))
-    }
-
-    private func prepareShare() {
-        let body = message.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !body.isEmpty else { return }
-        let signed = signature.trimmingCharacters(in: .whitespacesAndNewlines)
-        let contents = body + (signed.isEmpty ? "" : "\n\nFirma dichiarata dal mittente: " + signed)
-        do {
-            scanner.stop()
-            let folder = FileManager.default.temporaryDirectory.appendingPathComponent("MyG-Shares", isDirectory: true)
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            // Delete only files produced by this app on earlier shares.
-            for old in try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) {
-                try? FileManager.default.removeItem(at: old)
+            Section("Mappe e privacy") {
+                Text(GoogleSetup.available ? "Google Maps configurato, attivabile nella scheda dispositivo." : "Google Maps non configurato: mappa Apple disponibile.")
+                Toggle("Consenso Google Maps", isOn: $googleConsent)
+                Text("Le mappe richiedono rete e contattano il fornitore dell’area visualizzata. Identificativi BLE non inviati. Scansioni e coordinate non sono salvate su un nostro server.")
+                Text("Accessori, calibrazioni e firma sono conservati nelle preferenze dell’app e possono rientrare nei backup iOS. Elenco rilevato e bozza restano in memoria.")
             }
-            let url = folder.appendingPathComponent("MyG-messaggio-\(UUID().uuidString.prefix(8)).txt")
-            try contents.write(to: url, atomically: true, encoding: .utf8)
-            shareStatus = ""
-            shareFile = ShareFile(url: url)
-        } catch { self.error = error.localizedDescription }
+            Section {
+                Button("Cancella accessori e calibrazioni", role: .destructive) { erase = true }
+            }
+        }.navigationTitle("Info e dati")
+            .confirmationDialog("Cancellare accessori e calibrazioni salvati?", isPresented: $erase, titleVisibility: .visible) {
+                Button("Cancella", role: .destructive) { scanner.pauseForBackground(); store.erase() }
+            }
     }
 }
 
-private struct SystemShare: UIViewControllerRepresentable {
-    let url: URL
-    let completion: (Bool) -> Void
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-        controller.completionWithItemsHandler = { _, completed, _, _ in
-            DispatchQueue.main.async { completion(completed) }
-        }
-        return controller
+private struct DeviceRow: View {
+    let device: NearbyDevice
+    let calibration: Calibration
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(device.name).font(.headline)
+                Spacer()
+                Text(device.rssi.map { String(format: "%.0f dBm", $0) } ?? "N/D").font(.caption.monospaced())
+            }
+            Text(device.id.uuidString).font(.caption2.monospaced()).foregroundStyle(.secondary)
+            if let rssi = device.rssi, let distance = SignalFilter.distance(rssi: rssi, reference: calibration.reference, exponent: calibration.exponent) {
+                Text(distance > 500 ? "Stima oltre 500 m · poco attendibile" : String(format: "Ultima stima ≈ %.1f m · non GPS", distance))
+                    .font(.subheadline).foregroundStyle(.mint)
+            }
+            HStack { Text("Rilevato"); Text(device.lastSeen, style: .time); Spacer(); Text("Segui segnale →") }
+                .font(.caption)
+        }.mygCard()
     }
-    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }

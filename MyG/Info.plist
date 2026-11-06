@@ -15,13 +15,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>2.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>My G usa il Bluetooth per mostrare le periferiche BLE che trasmettono nelle vicinanze.</string>
+	<string>My G rileva segnali BLE vicini e si collega solo agli accessori che scegli.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Mostra il tuo iPhone e un cerchio di distanza Bluetooth indicativa sulla mappa. Non ricava la posizione di altri dispositivi.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
