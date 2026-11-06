@@ -1,15 +1,13 @@
-"""Check layout and device platform. Does not verify signing/installability."""
 import plistlib
 import sys
 import zipfile
-
 with zipfile.ZipFile(sys.argv[1]) as archive:
-    if archive.testzip() is not None:
-        raise SystemExit('Archivio corrotto')
-    info = plistlib.loads(archive.read('Payload/MyG.app/Info.plist'))
-    assert info['CFBundlePackageType'] == 'APPL'
+    assert archive.testzip() is None
+    info = plistlib.loads(archive.read('Payload/ECO.app/Info.plist'))
     assert 'iPhoneOS' in info['CFBundleSupportedPlatforms']
-    assert info.get('NSBluetoothAlwaysUsageDescription')
-    executable = 'Payload/MyG.app/' + info['CFBundleExecutable']
-    assert len(archive.read(executable)) > 0
-print('Struttura IPA e piattaforma iPhoneOS verificate; firma non verificata.')
+    assert info['CFBundleIdentifier'].startswith('com.usino.eco')
+    assert info['CFBundlePackageType'] == 'APPL'
+    assert info['NSLocationWhenInUseUsageDescription']
+    assert archive.read('Payload/ECO.app/' + info['CFBundleExecutable'])
+    assert 'Payload/ECO.app/Assets.car' in archive.namelist()
+print('PASS: struttura IPA per iPhone. Firma non verificata: IPA non firmato.')

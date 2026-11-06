@@ -1,37 +1,40 @@
-# Verifiche My G 2
+# Verifiche ECO 0.1
 
-## Eseguite nell’ambiente di consegna
+## Controlli eseguibili qui
 
-- Sintassi shell del build script e parsing YAML del workflow.
-- Generazione deterministica del progetto Xcode, unicità/riferimenti oggetti, presenza di ogni file sorgente/risorsa e destinazione schema.
-- Parsing plist permessi, privacy manifest e asset catalog; icona opaca RGB 1024 × 1024 e controllo visivo logo.
-- Configurazione senza Google: nessuna chiave e nessuna dipendenza SDK.
-- Configurazione Google richiesta senza chiave: fallimento esplicito prima della compilazione.
-- Configurazione Google con valore fittizio di prova: creazione riferimenti SPM e risorsa ignorata; ripristino senza Google e nessuna chiave nel pacchetto consegnato.
-- Validatore IPA: accetta una fixture iPhoneOS e respinge una fixture simulatore. Le fixture NON sono app compilate/installabili e non sono incluse.
-- Integrità ZIP finale.
+Parsing workflow, sintassi bash e Python, generazione deterministica progetto Xcode, riferimenti a sorgenti/risorse, schema, plist, privacy manifest, asset e icona RGB opaca. Controllo struttura e piattaforma del validatore IPA con fixture. Integrità ZIP finale. Le fixture non sono app e non sono consegnate.
 
-## Da eseguire nel workflow macOS
+## Controlli Swift inclusi nel workflow
 
-Il job compila ed esegue tests/SignalChecks/main.swift con il vero SignalMath.swift, poi compila l’app per iphoneos arm64. I controlli verificano riferimento a 1 m, monotonicità del modello, rifiuto RSSI non disponibile/NaN e parametri non validi, limitazione burst, tendenza e reset dopo interruzione.
+Test eseguiti contro EcoModel.swift e EcoStore.swift reali:
+- crescita iniziale e prima trasformazione;
+- più ricordi della stessa giornata non moltiplicano memoria/presenza;
+- curiosità solo per missioni diverse e una registrazione missione al giorno;
+- missione quotidiana stabile, rotazione nei giorni successivi;
+- nessuna penalità durante il riposo;
+- coordinate non valide rifiutate;
+- serializzazione e ricaricamento del diario;
+- limite tre luoghi;
+- archivio corrotto protetto e importazione non valida che conserva i dati;
+- ripristino backup valido e cancellazione.
 
-Questi test Swift sono inclusi ma non eseguiti qui: il compilatore Swift/Xcode non è disponibile. Anche la variante Google necessita di esecuzione sul runner, risoluzione del pacchetto e chiave valida.
+Il job poi compila l’intera app per iPhone arm64, impacchetta e verifica il formato dell’IPA. Firma non inclusa.
 
-## Prove indispensabili sul tuo iPhone
+Questi test Swift e la compilazione Xcode NON sono stati eseguiti nell’ambiente di consegna, privo di Swift/macOS/Xcode. Saranno eseguiti dalla prima Actions nel tuo repository.
 
-1. Aggiornamento v1 con stessa identità Sideloadly; nuova icona e 4 schede.
-2. Bluetooth autorizzato/negato/spento, nessun dispositivo, periferica rilevabile.
-3. Letture duplicate non generano righe duplicate; RSSI cambia e ultimo rilevamento si aggiorna.
-4. Segui segnale: avvicinamento/allontanamento reale confrontato con variazioni; verificare stabilità e non interpretare la tendenza come prova di movimento.
-5. Dopo 12 secondi senza RSSI valido: segnale perso, nessuna tendenza attiva e cerchio nascosto. Ripresa: media riparte.
-6. Ferma ricerca: valori etichettati dati fermi, cerchio nascosto; nessun aggiornamento RSSI fino al riavvio.
-7. Calibrazione ad almeno 1 m misurato fisicamente, con 8 letture recenti; reset e persistenza dopo riavvio.
-8. GPS autorizzato/negato/posizione approssimativa/revocata; BLE funziona anche senza mappa. Controllare timestamp e precisione GPS.
-9. Mappa Apple: A, cerchio RSSI verde solo recente/attivo, incertezza GPS grigia, Centra A e pan/zoom.
-10. Google opzionale: build manuale con secret, Bundle ID firmato autorizzato, consenso, rendering/attribuzioni visibili, cerchi e chiave non valida. Le mappe potrebbero risultare vuote se la configurazione Google è errata; ripassare a mappa Apple.
-11. Accessorio Battery Service reale: inserimento marca/modello, connessione, lettura 0–100%, aggiornamento, scollegamento, timeout, servizio assente e perdita radio. Nessuna percentuale finta e nessun comando power.
-12. Background e blocco schermo: stop scansione/connessioni; ritorno in primo piano richiede riavvio manuale della ricerca/posizione.
-13. AirDrop: Unicode, firma opzionale, annullamento e ricezione file su secondo dispositivo.
-14. Rimozione accessorio e cancellazione calibrazioni, consenso mappe revocato, testi leggibili con carattere grande/VoiceOver.
+## Prove sul tuo iPhone
 
-Non è un localizzatore di precisione. I test statici non sostituiscono le prove hardware.
+1. Installazione separata da My G, icona ECO, onboarding una volta sola.
+2. Primo luogo manuale senza chiedere GPS; creazione di tre luoghi e blocco del quarto.
+3. GPS accettato/negato, timeout, modalità approssimativa e cancellazione richiesta quando l’app esce dal primo piano.
+4. Scheda della creatura e dieci missioni, ricordi con testo/foto, forma che cambia alle soglie.
+5. Creazione già conteggiata oggi: ulteriore presenza vuota bloccata, memoria consentita, missione duplicata bloccata.
+6. Foto locale/iCloud, file troppo grande o non disponibile, rimozione prima del salvataggio, nessun progresso perso in caso di errore.
+7. Diario ricercabile e riapertura dell’app con dati conservati.
+8. Mappa Apple con pin e lista cliccabile; luogo manuale presente nella lista anche senza pin.
+9. Backup esportato in File, importato dopo conferma, backup malformato rifiutato senza perdere il diario.
+10. Eliminazione di un luogo e cancellazione completa con conferma.
+11. Modalità Riduci movimento, VoiceOver, testi ingranditi e schermo piccolo.
+12. Firma scaduta e reinstallazione con lo stesso Apple ID/Bundle ID: esportare comunque un backup prima di aggiornamenti importanti.
+
+La v0.1 è un prototipo: nessuna prova commerciale, approvazione App Store, garanzia di precisione GPS o validazione della domanda di mercato è dichiarata.
