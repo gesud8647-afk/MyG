@@ -67,7 +67,7 @@ jobs:
             exit 1
           fi
 
-          lipo -verify_arch arm64 "$APP/MyG"
+          lipo "$APP/MyG" -verify_arch arm64
 
           PACKAGE="$RUNNER_TEMP/MyGPackage"
           mkdir -p "$PACKAGE/Payload"
