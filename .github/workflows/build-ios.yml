@@ -1,53 +1,44 @@
-name: My G 2 - Crea IPA
+name: ECO - Crea IPA
 
 on:
   push:
     branches: [main, master]
   workflow_dispatch:
-    inputs:
-      google_maps:
-        description: 'Includi Google Maps (richiede secret GOOGLE_MAPS_API_KEY)'
-        required: true
-        type: boolean
-        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: myg-${{ github.ref }}
+  group: eco-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Compilazione iPhone
+    name: Compilazione ECO per iPhone
     runs-on: macos-15
     timeout-minutes: 25
     steps:
-      - name: Scarica repository
+      - name: Scarica progetto
         uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - name: Compila, verifica e crea IPA
+      - name: Verifica regole e compila IPA
         shell: bash
-        env:
-          ENABLE_GOOGLE_MAPS: ${{ github.event_name == 'workflow_dispatch' && inputs.google_maps && 'true' || 'false' }}
-          GOOGLE_MAPS_API_KEY: ${{ github.event_name == 'workflow_dispatch' && inputs.google_maps && secrets.GOOGLE_MAPS_API_KEY || '' }}
         run: |
           set -o pipefail
-          bash scripts/build-unsigned-ipa.sh 2>&1 | tee build.log
+          bash scripts/build-ipa.sh 2>&1 | tee build.log
       - name: Scarica IPA da firmare
         uses: actions/upload-artifact@v6
         with:
-          name: MyG-2-IPA-da-firmare
-          path: dist/MyG-unsigned.ipa
+          name: ECO-IPA-da-firmare
+          path: dist/ECO-unsigned.ipa
           if-no-files-found: error
           retention-days: 7
       - name: Conserva log
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: MyG-2-log-compilazione
+          name: ECO-log-compilazione
           path: build.log
           if-no-files-found: ignore
           retention-days: 7
