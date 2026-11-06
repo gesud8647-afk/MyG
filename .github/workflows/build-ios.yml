@@ -1,1 +1,7 @@
+name: Compila My G per 3uTools
 
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
