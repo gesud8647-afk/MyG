@@ -1,6 +1,7 @@
-name: Compila My G per 3uTools
+name: My G - Crea IPA
 
 on:
+  push:
   workflow_dispatch:
 
 permissions:
@@ -8,27 +9,93 @@ permissions:
 
 jobs:
   build:
+    name: Compilazione iPhone
     runs-on: macos-15
     timeout-minutes: 20
 
     steps:
-      - name: Scarica il progetto
+      - name: Scarica il repository
         uses: actions/checkout@v4
 
-      - name: Compila IPA
-        run: bash scripts/build-unsigned-ipa.sh
+      - name: Verifica Xcode
+        run: xcodebuild -version
 
-      - name: Scarica IPA da firmare
+      - name: Compila e crea IPA non firmato
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+
+          PROJECT="$(find "$GITHUB_WORKSPACE" \
+            -type d -name 'MyG.xcodeproj' \
+            -not -path '*/.git/*' \
+            -print -quit)"
+
+          if [[ -z "$PROJECT" ]]; then
+            echo "::error::MyG.xcodeproj non trovato nel repository."
+            exit 1
+          fi
+
+          echo "Progetto trovato: $PROJECT"
+
+          xcodebuild \
+            -project "$PROJECT" \
+            -scheme MyG \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/MyGBuild" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
+
+          APP="$RUNNER_TEMP/MyGBuild/Build/Products/Release-iphoneos/MyG.app"
+
+          if [[ ! -d "$APP" ]]; then
+            echo "::error::La compilazione non ha prodotto MyG.app."
+            exit 1
+          fi
+
+          PLATFORM=$(/usr/libexec/PlistBuddy \
+            -c 'Print :CFBundleSupportedPlatforms:0' \
+            "$APP/Info.plist")
+
+          if [[ "$PLATFORM" != "iPhoneOS" ]]; then
+            echo "::error::Il risultato non è un'app per iPhone fisico."
+            exit 1
+          fi
+
+          lipo -verify_arch arm64 "$APP/MyG"
+
+          PACKAGE="$RUNNER_TEMP/MyGPackage"
+          mkdir -p "$PACKAGE/Payload"
+          ditto "$APP" "$PACKAGE/Payload/MyG.app"
+
+          cd "$PACKAGE"
+          /usr/bin/zip -qry \
+            "$GITHUB_WORKSPACE/dist/MyG-unsigned.ipa" \
+            Payload
+
+          /usr/bin/unzip -t \
+            "$GITHUB_WORKSPACE/dist/MyG-unsigned.ipa"
+
+          echo "IPA non firmato creato correttamente."
+
+      - name: Rendi scaricabile IPA
         uses: actions/upload-artifact@v4
         with:
           name: MyG-IPA-da-firmare
           path: dist/MyG-unsigned.ipa
           if-no-files-found: error
+          retention-days: 7
 
-      - name: Salva log
+      - name: Rendi scaricabile il log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: MyG-log-compilazione
           path: build.log
           if-no-files-found: ignore
+          retention-days: 7
