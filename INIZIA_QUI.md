@@ -1,6 +1,14 @@
-# USI Pocket Security 0.2 — iPhone 15
+# USI Pocket Security 0.2.1 — iPhone 15
 
 Questo ZIP contiene il progetto aggiornato di Pocket AI e il workflow GitHub. Non contiene un IPA già compilato o il modello GGUF. L’app ha due schede: Chat e Sicurezza; i cinque strumenti funzionano anche senza Qwen.
+
+## Aggiornamento 0.2.1 — risposte che ripetono il saluto
+
+Sostituisci il contenuto del progetto con questo pacchetto, incluso scripts e tests. Mantieni il workflow già fornito. Compila su GitHub e reinstalla l’IPA con stesso Apple ID e impostazioni Sideloadly. Non disinstallare l’app: il GGUF già importato può essere conservato nell’aggiornamento.
+
+Il prompt ora richiede risposte dirette senza saluti automatici. Per impostazione iniziale ogni domanda viene inviata separatamente: la chat precedente rimane visibile/salvata ma non entra nel prompt. In Chat → ingranaggio → Contesto della risposta puoi attivare **Usa messaggi precedenti** quando vuoi conversare con riferimenti al passato. Lo stato viene salvato. Un nuovo invio non interrompe o altera risposte già generate; il modello può comunque sbagliare.
+
+Rimane incluso il fix del percorso Vendor per il linker. Versione app 0.2.1, build 3, bundle ID invariato. Nessun nuovo download del modello richiesto. La correzione va ancora provata sul telefono; non è una diagnosi certa del comportamento segnalato.
 
 ## 1. Compila e installa da Windows
 

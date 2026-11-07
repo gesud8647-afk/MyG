@@ -1,4 +1,4 @@
-# USI Pocket Security 0.2
+# USI Pocket Security 0.2.1
 
 App nativa SwiftUI iOS 16+, pensata per iPhone 15. Evoluzione della chat locale Pocket AI: Qwen3-0.6B Q8_0 con llama.cpp CPU e cinque strumenti espliciti, utilizzabili senza modello.
 

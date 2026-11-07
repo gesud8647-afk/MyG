@@ -4,6 +4,9 @@ import Combine
 final class ChatModel: ObservableObject {
     @Published private(set) var messages: [ChatMessage] = []
     @Published var draft = ""
+    @Published var includeHistory = UserDefaults.standard.bool(forKey: "pocket.includeHistory") {
+        didSet { UserDefaults.standard.set(includeHistory, forKey: "pocket.includeHistory") }
+    }
     @Published private(set) var busy = false
     @Published private(set) var generating = false
     @Published private(set) var loaded = false
@@ -97,7 +100,7 @@ final class ChatModel: ObservableObject {
         draft = ""
         messages.append(ChatMessage(role: .user, text: text))
         if messages.count > 48 { messages = Array(messages.suffix(48)) }
-        let prompt = PromptBuilder.build(messages)
+        let prompt = PromptBuilder.build(messages, includeHistory: includeHistory)
         let answer = ChatMessage(role: .assistant, text: "")
         messages.append(answer)
         busy = true; generating = true; status = "Qwen sta rispondendo sul telefono…"

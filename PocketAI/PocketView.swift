@@ -80,7 +80,7 @@ struct PocketView: View {
             Image(systemName: "cpu").font(.system(size: 46)).foregroundStyle(.mint)
             Text("Qwen, sul tuo iPhone.").font(.largeTitle.bold())
             Text("Importa il modello ufficiale, caricalo e fai una domanda breve. La risposta viene calcolata qui, senza inviare la chat a un server.")
-            Text("Versione 0.2 · chat locale + strumenti di sicurezza").font(.caption).foregroundStyle(.secondary)
+            Text("Versione 0.2.1 · chat locale + strumenti di sicurezza").font(.caption).foregroundStyle(.secondary)
             Button("Come installo il modello?") { settings = true }.buttonStyle(.bordered)
             Text("Apri Sicurezza oppure scrivi /link, /qr, /hash, /foto o /rete. I controlli funzionano anche senza modello; Qwen può sbagliare.").font(.footnote).foregroundStyle(.secondary)
         }.padding(.vertical, 20)
@@ -98,7 +98,7 @@ struct PocketView: View {
                         .accessibilityLabel("Invia messaggio")
                 }
             }
-            Text("\(chat.draft.count)/1000 · inferenza locale, nessun comando di sistema").font(.caption2).foregroundStyle(.secondary)
+            Text("\(chat.draft.count)/1000 · \(chat.includeHistory ? "contesto recente" : "domanda indipendente") · locale").font(.caption2).foregroundStyle(.secondary)
         }.padding()
     }
     private var modelSettings: some View {
@@ -140,8 +140,12 @@ private struct ModelSettings: View {
                     Text(chat.status).font(.caption)
                     if let error = chat.error { Text(error).font(.caption).foregroundStyle(.orange) }
                 }
+                Section("Contesto della risposta") {
+                    Toggle("Usa messaggi precedenti", isOn: $chat.includeHistory).disabled(chat.busy)
+                    Text("Spento: ogni domanda è indipendente, anche se la chat resta visibile. Acceso: Qwen riceve anche alcune risposte precedenti; può riprenderne errori o saluti. Se si ripete, disattiva questa opzione o avvia una nuova chat.").font(.caption)
+                }
                 Section("Uso e limiti") {
-                    Text("CPU locale, contesto 2048 token e fino a 256 token per risposta. Solo una parte recente della cronologia entra nel contesto. Per testi lunghi avvia una nuova chat. La prima risposta può richiedere attesa.")
+                    Text("CPU locale, contesto 2048 token e fino a 256 token per risposta. Se attivi Usa messaggi precedenti, una parte recente della cronologia entra nel contesto. Per testi lunghi avvia una nuova chat. La prima risposta può richiedere attesa.")
                     Text("Memoria, velocità e temperatura dipendono dal telefono e dalle altre app. iOS può terminare un’app che usa troppa memoria. La generazione viene interrotta quando l’app va in background.")
                     Text("Niente server AI, account Qwen o chiavi API. I collegamenti di download contattano Hugging Face/CDN. La cronologia è locale e può rientrare nei backup iOS; il modello copiato è escluso dai backup dell’app.")
                     Text("Questo prototipo non può controllare altre app o modificare impostazioni del telefono. Le risposte sono testo, non azioni eseguite.")

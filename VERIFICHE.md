@@ -31,3 +31,19 @@ Non disponibili qui Swift/Xcode/macOS o iPhone collegato: i test Swift e la comp
 10. Font grandi, VoiceOver, tastiera e spazi delle barre inferiori sul tuo iPhone 15.
 
 La riuscita dei controlli strutturali non garantisce una build verde o corretto comportamento delle API iOS sul dispositivo. In caso di errore servono i dettagli dello step rosso, non il solo codice 65.
+
+## Correzione del collegamento nativo — log GitHub ricevuto
+
+Il log Xcode 16.4 fornito dall’utente mostra entrambi i gruppi di test Swift PASS, compilazione completata di llama.cpp, avanzamento della compilazione Swift dell’app e fallimento finale del linker: `library 'pocket-llama' not found`.
+
+Corretto `scripts/generate_project.py` con `LIBRARY_SEARCH_PATHS` per `$(SRCROOT)/Vendor`, dove build-engine.sh crea libpocket-llama.a. Rigenerato anche il progetto Xcode incluso, per Debug e Release. La versione fix conserva bundle ID e versione app.
+
+Verificati localmente generatore, riferimenti progetto e percorso libreria nelle due configurazioni. Il precedente esito dei test Swift proviene dal log GitHub, non da un’esecuzione locale. Il nuovo linking e la generazione IPA richiedono una nuova esecuzione del workflow; non sono ancora confermati.
+
+## 0.2.1 — saluti ripetuti
+
+Il codice azzera già la memoria KV prima di ogni generazione e crea un nuovo sampler. Non è stata osservata un’evidenza di risposta precedente ricopiata dall’app. La causa esatta del comportamento segnalato non è riprodotta localmente.
+
+Modifiche: istruzione diretta senza saluti automatici; contesto precedente opzionale e inizialmente disattivato, scelta persistente; indicatore nel composer. Nessuna risposta precompilata o filtro che nasconde il saluto generato. Test Swift aggiunti per verificare l’esclusione del precedente saluto dal prompt indipendente e la conservazione del contesto quando attivato. Questi nuovi test verranno eseguiti su GitHub, non qui.
+
+Prova iPhone: con contesto spento chiedi “Quanto fa 7 per 8?”, poi “Spiega un relè in due frasi”; controlla che la risposta affronti ogni richiesta. Attiva contesto, comunica un’informazione e verifica il richiamo nel messaggio successivo. Il risultato del modello resta da verificare: correttezza della struttura del prompt non garantisce qualità delle risposte.

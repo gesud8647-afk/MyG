@@ -43,3 +43,11 @@ check(SecurityRoute.parse("/rete") == .network, "Route explicit command")
 check(SecurityRoute.parse("spiegami /rete") == nil, "Do not interpret arbitrary prose as command")
 check(SecurityRules.explanationPrompt(String(repeating:"x", count:10000)).count <= 1000, "Explanation draft fits composer")
 print("PASS: URL user info, report privacy, strict IPv4, SHA input and explicit routes")
+
+let greetingLoop = [ChatMessage(role:.user,text:"Ciao"), ChatMessage(role:.assistant,text:"Ciao! Come posso aiutarti?"), ChatMessage(role:.user,text:"Quanto fa 7 per 8?")]
+let independent = PromptBuilder.build(greetingLoop, includeHistory: false)
+check(independent.contains("Quanto fa 7 per 8?"), "Independent mode keeps actual question")
+check(!independent.contains("Come posso aiutarti?"), "Independent mode excludes previous greeting")
+check(!independent.contains("<|im_start|>user\nCiao"), "Independent mode excludes previous user greeting")
+check(PromptBuilder.build(greetingLoop, includeHistory: true).contains("Come posso aiutarti?"), "History mode remains available")
+print("PASS: independent question isolates previous greeting; optional context retained")
