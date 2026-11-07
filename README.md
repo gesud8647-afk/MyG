@@ -1,45 +1,23 @@
-# ECO — Primo Legame
+# USI Pocket Security 0.2
 
-Apri prima **INIZIA_QUI.md** per caricare il progetto in un NUOVO repository e installarlo con GitHub Actions + Sideloadly da Windows.
+App nativa SwiftUI iOS 16+, pensata per iPhone 15. Evoluzione della chat locale Pocket AI: Qwen3-0.6B Q8_0 con llama.cpp CPU e cinque strumenti espliciti, utilizzabili senza modello.
 
-## Stack
+- URL: parsing locale, host e indizi; nessuna richiesta al sito.
+- QR: Vision su foto selezionata, nessuna azione automatica.
+- SHA-256: CryptoKit, lettura a blocchi e confronto con riferimento.
+- Foto: ricodifica ImageIO JPEG, controllo assenza GPS/EXIF prima della condivisione.
+- LAN: Network.framework, un IPv4 RFC1918 scelto, connessioni TCP limitate e annullabili.
 
-Swift 5, SwiftUI, Core Location, MapKit e PhotosUI. Deployment iOS 16, solo iPhone. Nessuna dipendenza esterna, chiave API, account o server. Le creature sono disegni vettoriali animati via Canvas; non serve un modello AI. Bundle ID base `com.usino.eco.primolegame`; firma e eventuale riscrittura ID gestite da Sideloadly.
+Chat e Sicurezza condividono solo estratti di report richiesti dall’utente. Nessuna esecuzione di codice o tool chiamato dal modello. UI scura con accenti mint, icona esistente CPU locale. Bundle ID invariato: com.usino.pocketai. Build 2, versione 0.2.
 
-## File
+Parti da **INIZIA_QUI.md**. Workflow: **USI Pocket Security - Crea IPA**. Artifact: **PocketAI-IPA-da-firmare**, contenente IPA unsigned da firmare con Sideloadly. Modello separato, non incluso.
 
-- ECO/EcoModel.swift: modello Codable, missioni e regole pure.
-- ECO/EcoStore.swift: salvataggio atomico, limiti e import/export.
-- ECO/EcoLocation.swift: richiesta GPS singola, timeout, nessun background.
-- ECO/CreatureView.swift: forme/animazione/accessibilità.
-- ECO/RootView.swift: navigazione, onboarding e collezione.
-- ECO/PlaceViews.swift: creazione luogo, visita, missione e foto.
-- ECO/PlacesMapView.swift: mappa Apple e lista dei luoghi.
-- ECO/JournalView.swift: diario e ricerca locale.
-- ECO/SettingsView.swift: privacy, backup e cancellazione.
-- tests/RulesChecks/main.swift: test delle vere regole e del vero store.
-- scripts/generate_project.py: rigenera progetto/plist/schema senza dipendenze.
-- scripts/build-ipa.sh: test Swift, build iphoneos, arm64, packaging.
-- .github/workflows/build-ios.yml: esecuzione macOS, artifact IPA e log.
+## Architettura
 
-## Dati
+`SecurityRules.swift`: parsing, confini IPv4, normalizzazione hash e routing esplicito. `SecurityFiles.swift`: hash e ricodifica. `LocalPortProbe.swift`: connessioni seriali TCP con timeout. `SecurityViews.swift`: controlli e report. `PocketRootView`: schede e passaggio bozza alla chat. `PromptBuilder`: contesto limitato, delimitatori ChatML e visualizzazione senza think. `NativeEngine` e bridge C++: inference CPU locale già presente.
 
-Archivio JSON nella sandbox Application Support/ECO/eco-v1.json. Le foto selezionate vengono ridotte a massimo 1024px e ricodificate JPEG (max 2 MB ciascuna); non viene conservato il file originale con i suoi metadati. Il salvataggio e import sono limitati a 64 MB di JSON. Il prototipo riscrive l’archivio a ogni modifica: per una libreria grande serviranno database e file foto separati.
+Solo permesso Rete locale aggiunto. PhotosPicker non richiede accesso completo alla libreria, né fotocamera. Nessun entitlement multicast o scansione Wi-Fi. Non inviare report o credenziali personali al repository.
 
-Il salvataggio aggiorna lo stato UI solo dopo la scrittura riuscita. Un archivio non leggibile non viene sovrascritto automaticamente. In quel caso è esportabile il file originale prima di un eventuale ripristino. Importare un backup sostituisce i dati attuali e richiede conferma nell’app.
+Dipendenza motore fissata a llama.cpp b6000, commit 4762ad7316dcdec20016ab5985fb46a27902204d, MIT (licenza inclusa). Modello ufficiale Qwen3-0.6B-GGUF Q8_0, Apache 2.0, verificato dall’importatore con SHA-256. Nessuna chiave API o servizio AI a pagamento.
 
-Il backup JSON contiene testo, foto base64 e coordinate: non è un file cifrato esportato. L’originale nell’app usa la protezione file iOS e può rientrare nei backup del dispositivo. Proteggi le copie esportate. La cancellazione nell’app non rimuove copie già condivise o backup esterni. Non caricare backup personali su GitHub.
-
-La posizione non è registrata passivamente: richiesta singola dopo un tocco, cancellata quando esci dalla schermata o l’app diventa inattiva. Non è presente nessuna autorizzazione Always, Bluetooth, microfono o fotocamera. PhotosPicker apre il selettore di sistema, senza accesso indiscriminato alla libreria; foto solo scelte dall’utente. Se una foto è solo su iCloud può servire rete per scaricarla. MapKit contatta Apple per la mappa: l’app non è totalmente offline per nuove mappe, mentre diario/manuale restano utilizzabili offline.
-
-## Versioni successive, dopo il test
-
-Prima migliorare esperienza e qualità grafica con feedback reale. Poi Android e backup cloud facoltativo. Solo dopo validazione aggiungere contenuti acquistabili e pubblicazione ufficiale: non simulare pagamenti e non distribuire un prodotto commerciale tramite sola firma personale.
-
-## Fonti tecniche
-
-- https://developer.apple.com/documentation/corelocation/cllocationmanager/requestlocation()
-- https://developer.apple.com/documentation/photosui/photospicker
-- https://developer.apple.com/documentation/mapkit
-- https://github.com/actions/checkout
-- https://github.com/actions/upload-artifact
+Non compilato con Xcode in questo ambiente. Stato delle verifiche: **VERIFICHE.md**.

@@ -1,48 +1,33 @@
-# Verifiche ECO 0.1
+# Verifiche — Pocket Security 0.2
 
-## Controlli eseguibili qui
+## Eseguito nell’ambiente di sviluppo
 
-Parsing workflow, sintassi bash e Python, generazione deterministica progetto Xcode, riferimenti a sorgenti/risorse, schema, plist, privacy manifest, asset e icona RGB opaca. Controllo struttura e piattaforma del validatore IPA con fixture. Integrità ZIP finale. Le fixture non sono app e non sono consegnate.
+- Generazione progetto Xcode con tutti i sorgenti, unicità/riferimenti degli oggetti, plist e schema XML.
+- Versione 0.2/build 2 e descrizione Rete locale nel plist generato.
+- Parsing workflow (trigger push e workflow_dispatch, job macos-15), sintassi degli script Bash e Python.
+- Validatore IPA con fixture dispositivo e rifiuto fixture simulatore; integrità ZIP sorgente.
+- Revisione percorsi: nessuna apertura URL/QR, nessun invio automatico al modello; controllo TCP limitato a indirizzo privato e porte scelte; nessun tentativo di autenticazione.
+- Il bridge C++ invariato era già stato controllato con g++ contro gli header reali del commit llama.cpp fissato. Questo non prova il linking o l’inferenza.
 
-## Controlli Swift inclusi nel workflow
+## Incluso nel workflow, da eseguire su GitHub
 
-Test eseguiti contro EcoModel.swift e EcoStore.swift reali:
-- crescita iniziale e prima trasformazione;
-- più ricordi della stessa giornata non moltiplicano memoria/presenza;
-- curiosità solo per missioni diverse e una registrazione missione al giorno;
-- missione quotidiana stabile, rotazione nei giorni successivi;
-- nessuna penalità durante il riposo;
-- coordinate non valide rifiutate;
-- serializzazione e ricaricamento del diario;
-- limite tre luoghi;
-- archivio corrotto protetto e importazione non valida che conserva i dati;
-- ripristino backup valido e cancellazione.
+- Swift: test precedenti ChatML/storia/think e nuovi casi limite per host con credenziali, omissione valori query, IPv4 privati/pubblici/ambigui, hash e comandi espliciti.
+- Compilazione motore CPU arm64 contro SDK iPhone, bridge clang, intera app SwiftUI e collegamento.
+- Verifica architettura arm64 e struttura IPA. La firma rimane esterna.
 
-Il job poi compila l’intera app per iPhone arm64, impacchetta e verifica il formato dell’IPA. Firma non inclusa.
-
-Questi test Swift e la compilazione Xcode NON sono stati eseguiti nell’ambiente di consegna, privo di Swift/macOS/Xcode. Saranno eseguiti dalla prima Actions nel tuo repository.
+Non disponibili qui Swift/Xcode/macOS o iPhone collegato: i test Swift e la compilazione iOS NON sono stati eseguiti localmente. Il modello GGUF reale non è stato eseguito. Non misurati RAM, velocità, batteria o temperatura.
 
 ## Prove sul tuo iPhone
 
-1. Installazione separata da My G, icona ECO, onboarding una volta sola.
-2. Primo luogo manuale senza chiedere GPS; creazione di tre luoghi e blocco del quarto.
-3. GPS accettato/negato, timeout, modalità approssimativa e cancellazione richiesta quando l’app esce dal primo piano.
-4. Scheda della creatura e dieci missioni, ricordi con testo/foto, forma che cambia alle soglie.
-5. Creazione già conteggiata oggi: ulteriore presenza vuota bloccata, memoria consentita, missione duplicata bloccata.
-6. Foto locale/iCloud, file troppo grande o non disponibile, rimozione prima del salvataggio, nessun progresso perso in caso di errore.
-7. Diario ricercabile e riapertura dell’app con dati conservati.
-8. Mappa Apple con pin e lista cliccabile; luogo manuale presente nella lista anche senza pin.
-9. Backup esportato in File, importato dopo conferma, backup malformato rifiutato senza perdere il diario.
-10. Eliminazione di un luogo e cancellazione completa con conferma.
-11. Modalità Riduci movimento, VoiceOver, testi ingranditi e schermo piccolo.
-12. Firma scaduta e reinstallazione con lo stesso Apple ID/Bundle ID: esportare comunque un backup prima di aggiornamenti importanti.
+1. Aggiornamento con stesso account/identificativo Sideloadly, mantenimento chat e GGUF, avvio di entrambe le schede.
+2. Senza caricare Qwen: tutti i comandi espliciti aprono strumenti; testo libero non viene interpretato come un comando.
+3. URL `https://esempio.it@altro.example/login?token=prova`: host effettivo altro.example; nessuna apertura; valore token non nel report.
+4. QR URL, testo e Wi-Fi da foto: decodifica; nessuna connessione automatica; credenziali Wi-Fi non nel report.
+5. SHA-256 di un file noto contro hash calcolato sul PC: corrispondenza/differenza/riferimento errato; annullamento; file iCloud.
+6. Foto con GPS/EXIF noti: esportazione copia, controllo indipendente dei metadati esportati, originale preservato; foto ruotata e formati HEIC/JPEG.
+7. LAN autorizzata: IP con servizio noto, porte irraggiungibili, permesso concesso/negato e successiva ripetizione. Stop, background, uscita e riapertura senza risultati duplicati.
+8. Prepara spiegazione → bozza rivista → invio; nessun controllo eseguito dalla risposta del modello. Report condiviso tramite pannello iOS/AirDrop.
+9. Qwen: importazione corretta/rifiuto file errato, carica/scarica, italiano/UTF-8/streaming, stop, background e pressione memoria, chat in modalità aereo dopo import.
+10. Font grandi, VoiceOver, tastiera e spazi delle barre inferiori sul tuo iPhone 15.
 
-La v0.1 è un prototipo: nessuna prova commerciale, approvazione App Store, garanzia di precisione GPS o validazione della domanda di mercato è dichiarata.
-
-## Correzione CreatureView (dal log ricevuto)
-
-Il log del primo job GitHub conferma PASS dei test delle regole e dello store. La build dell’app si è fermata su CreatureView.swift: il compilatore non riusciva a verificare l’espressione del body nei tempi previsti.
-
-Correzione: TimelineView/Canvas ridotti a chiamate semplici; geometria e disegno separati in funzioni con tipi CGFloat/Double espliciti. Conservate cinque forme, colori, animazione, sonno e descrizione VoiceOver. Aggiunto controllo dimensioni Canvas e protezione dell’indice forma.
-
-La build completa dopo la correzione resta da eseguire su GitHub; nessun successo Xcode successivo è dichiarato da questi controlli strutturali.
+La riuscita dei controlli strutturali non garantisce una build verde o corretto comportamento delle API iOS sul dispositivo. In caso di errore servono i dettagli dello step rosso, non il solo codice 65.

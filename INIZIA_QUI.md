@@ -1,56 +1,81 @@
-# ECO — Primo Legame 0.1
+# USI Pocket Security 0.2 — iPhone 15
 
-Prototipo iPhone nativo, iOS 16 o successivo. App separata da My G: non sostituire il repository My G.
+Questo ZIP contiene il progetto aggiornato di Pocket AI e il workflow GitHub. Non contiene un IPA già compilato o il modello GGUF. L’app ha due schede: Chat e Sicurezza; i cinque strumenti funzionano anche senza Qwen.
 
-## Come provarla dal tuo PC Windows
+## 1. Compila e installa da Windows
 
-1. Estrai questo ZIP in una cartella sul PC.
-2. Su GitHub crea un NUOVO repository chiamato `ECO`. Può essere privato. Inizializzalo con un README.
-3. Nel nuovo repository scegli Add file → Upload files.
-4. Apri la cartella estratta sul PC e trascina il suo CONTENUTO: `ECO`, `ECO.xcodeproj`, `scripts`, `tests`, `Brand` e i documenti. Non trascinare la cartella esterna e non caricare lo ZIP senza estrarlo.
-5. Conferma con Commit changes. Nella pagina principale devono comparire direttamente `ECO.xcodeproj`, `ECO`, `scripts` e `tests`.
-6. Aggiungi o sostituisci il workflow `.github/workflows/build-ios.yml`. Se il browser non carica `.github`, usa Add file → Create new file e scrivi ESATTAMENTE `.github/workflows/build-ios.yml` nel nome. Apri il file omonimo nello ZIP con Blocco note, copia TUTTO il contenuto nell’editor GitHub e conferma. Non copiare delimitatori Markdown.
-7. Vai in Actions → **ECO - Crea IPA**. Parte su salvataggio a main/master, oppure premi Run workflow → main → Run workflow.
-8. Il job controlla le regole di gioco, compila per iPhone arm64 e prepara il pacchetto. Quando è verde, apri Summary → Artifacts → **ECO-IPA-da-firmare**.
-9. Scarica ed estrai l’artifact: trovi **ECO-unsigned.ipa**.
-10. Collega l’iPhone, sbloccalo, apri Sideloadly, trascina il nuovo IPA e usa il tuo Apple ID. Premi Start e completa la verifica soltanto nel programma. La firma è necessaria: GitHub produce un IPA non firmato.
-11. ECO apparirà come app separata da My G. Se iOS lo richiede, autorizza lo sviluppatore in Impostazioni → Generali → VPN e gestione dispositivo e abilita Modalità sviluppatore in Privacy e sicurezza.
+1. Estrai lo ZIP e apri la cartella PocketAI estratta.
+2. Apri il repository GitHub usato per Pocket AI. Se non lo hai ancora creato, creane uno nuovo chiamato PocketAI, anche privato. Non usare il repository My G o ECO.
+3. Carica il CONTENUTO: cartella `PocketAI` (sorgenti), `PocketAI.xcodeproj`, `scripts`, `tests`, documenti e licenza. Sostituisci i file omonimi e aggiungi i nuovi; non mettere tutto dentro un’ulteriore cartella contenitore nel repository.
+4. Aggiorna anche `.github/workflows/build-ios.yml`. Se Upload non mostra la cartella nascosta, apri il workflow su GitHub e sostituisci tutto il testo con quello del file nello ZIP. Se manca, Add file → Create new file e usa esattamente quel percorso. Non incollare delimitatori Markdown.
+5. Commit changes. Nella pagina principale devi vedere `PocketAI`, `scripts`, `tests` e `PocketAI.xcodeproj` allo stesso livello.
+6. Actions → **USI Pocket Security - Crea IPA**. Parte al commit su main/master, oppure Run workflow → main → Run workflow.
+7. Aspetta il job verde. Il runner macOS compila llama.cpp e l’app, con limite 45 minuti. Valgono le quote/costi GitHub del tuo piano; non servono chiavi AI o credenziali Apple nel repository.
+8. Summary → Artifacts → **PocketAI-IPA-da-firmare**. Estrai il download: trovi **PocketAI-unsigned.ipa**.
+9. Collega e sblocca iPhone. Trascina l’IPA in Sideloadly e firma con il tuo Apple ID come prima. Per aggiornare Pocket AI usa lo stesso Apple ID e le stesse impostazioni dell’identificativo app. Il bundle sorgente rimane `com.usino.pocketai`.
+10. Non disinstallare prima l’app se vuoi conservare chat e modello: la disinstallazione elimina i suoi dati. Verifica che Sideloadly aggiorni l’app esistente. Il nome sotto l’icona sarà **USI Security**.
 
-Non servono chiavi Google, certificati da caricare su GitHub o password nel repository. Le esecuzioni macOS sono soggette alle quote/costi del tuo piano GitHub. La firma gratuita tramite il tuo account ha i limiti previsti da Apple/Sideloadly e va rinnovata. Non sono implementati aggiornamenti automatici dell’app da GitHub.
+Non si aggiorna automaticamente al commit GitHub: ogni nuova versione va compilata e reinstallata con Sideloadly. La procedura di rinnovo firma è distinta dall’aggiornamento del codice.
 
-## Il tuo primo utilizzo (circa due minuti)
+## Uso degli strumenti
 
-1. Apri ECO e premi Cominciamo.
-2. Tocca Crea la tua prima eco e dai un nome a un luogo, per esempio “La mia piazza”.
-3. Scegli una sensazione. La posizione è facoltativa: puoi usare il luogo manualmente senza GPS.
-4. Premi Fai nascere la tua eco: nasce un Seme della famiglia Lume.
-5. Apri il luogo e scegli Aggiungi presenza o ricordo.
-6. Leggi la proposta del giorno, scrivi una tua osservazione o aggiungi una foto facoltativa. Conferma manualmente il momento, oppure verifica la vicinanza GPS se disponibile.
-7. Se hai svolto la proposta, selezionala e salva. La tua eco potrebbe cambiare forma: dipende dai passi di legame accumulati.
-8. Ritrova i ricordi in Diario e le trasformazioni in Forme. Puoi creare fino a tre luoghi.
+| Strumento | Uso e risultato | Limite |
+|---|---|---|
+| Analizza link | Incolla URL completo → Analizza. Mostra host effettivo e indizi strutturali. | Nessuna apertura, reputazione, redirect o verifica certificato. Nessun verdetto “sicuro”. |
+| QR da foto | Scegli un’immagine → legge il testo del QR con Vision. URL ispezionabile separatamente. | Non apre link o Wi-Fi automaticamente. Una lettura non autentica il mittente. |
+| SHA-256 | Scegli un file e, se disponibile, incolla l’hash ufficiale del produttore. | Identità del file rispetto al riferimento, non antivirus. Massimo 2 GB. |
+| Foto senza metadati | Scegli foto → ricodifica JPEG → controlla assenza dizionari GPS/EXIF → Esporta. | Copia fino a 4096 px; possibili perdita di qualità/HDR/animazione. Dati visibili nell’immagine restano. |
+| Rete locale | Inserisci un IPv4 privato noto, seleziona porte, conferma autorizzazione → Avvia. | Un host, massimo sei porte selezionabili, 4 secondi per porta; nessuna autenticazione. |
 
-La creazione conta già come presenza di oggi. Ripremere un pulsante senza aggiungere niente non aumenta i punti. Puoi aggiungere altri ricordi oggi; ritorni e memorie danno al massimo un punto ciascuno per giorno e luogo. Una missione differente aggiunge due punti di curiosità una sola volta. È permessa una missione al giorno per luogo.
+Il controllo TCP usa gli intervalli privati 10/8, 172.16/12 e 192.168/16. Sono esclusi per prudenza gli indirizzi che terminano in .0 e .255, anche se in alcune reti possono essere host validi. Non accetta nomi DNS, IP pubblici o IPv6. Non identifica automaticamente i dispositivi. Cerca l’indirizzo del tuo accessorio nell’app del produttore o nella pagina dispositivi del tuo router. Una porta aperta non significa vulnerabilità.
 
-## Cosa funziona nel progetto
+Consenti **Rete locale** al primo controllo. Se la richiesta compare durante il timeout, autorizza e ripeti. Background e uscita dalla schermata interrompono il controllo. Un errore può dipendere da firewall, permessi o rete: non dimostra che la porta sia chiusa.
 
-- Onboarding, quattro sezioni Oggi/Luoghi/Diario/Forme e impostazioni.
-- Tre luoghi privati, manuali o con posizione salvata.
-- Creatura Lume disegnata in codice, animazione leggera, quattro colori emozionali, cinque forme; riduzione movimento rispettata.
-- Dieci missioni creative a rotazione deterministica quotidiana.
-- Regole di crescita, limiti giornalieri, sonno dopo sette giorni senza penalità.
-- Diario ricercabile con note, foto e indicazione manuale/GPS.
-- Mappa Apple con punti salvati e schede cliccabili dei luoghi; nessuna API key necessaria.
-- Salvataggio atomico locale, backup completo JSON esportabile/importabile e cancellazione.
-- Logo/icona originale e workflow GitHub Actions.
+Da Chat puoi usare `/link https://esempio.it`, `/qr`, `/hash`, `/foto`, `/rete`: aprono la schermata corrispondente, senza avviare operazioni. Non occorre caricare Qwen per questi comandi.
 
-## Cosa non è ancora compreso
+Dopo un controllo, **Prepara spiegazione con Qwen** mette un estratto del report nella bozza Chat. Rivedi la bozza, carica Qwen se necessario e premi Invia. Le spiegazioni non sono nuovi controlli e possono essere imprecise. Il modello non riceve le foto o i file originali.
 
-Versione Android, account, sincronizzazione cloud, mappe pubbliche, social, riconoscimento AI delle emozioni o del luogo, notifiche, AR, acquisti o abbonamenti. La v0.1 serve a verificare se l’esperienza è interessante prima di investire nella distribuzione commerciale.
+## Dati e condivisione
 
-La modalità manuale si basa sulla tua dichiarazione. Il GPS conferma soltanto vicinanza indicativa entro 100 m, con precisione iniziale e attuale entro 60 m; non dimostra che una missione sia stata svolta. Non è un sistema antifrode e non distribuisce premi in denaro.
+- I controlli lavorano localmente; solo il controllo TCP effettua connessioni al tuo host scelto. La scelta di file/foto iCloud può richiedere il download Apple.
+- Risultati e QR restano nella schermata in memoria, senza archivio automatico. Se mandi un report alla chat, il testo viene salvato nella cronologia locale già prevista dall’app.
+- Nel report QR vengono omessi testo generico e credenziali Wi-Fi; il QR completo rimane leggibile nella schermata. Nei report URL sono omessi i valori dei parametri, ma host e nomi dei parametri possono comunque contenere informazioni personali.
+- Condividi report o Esporta copia apre il pannello iOS: scegli tu destinatario/app, anche AirDrop se disponibile. Il destinatario deve accettare quando richiesto.
+- Le copie JPEG temporanee possono restare nella cache finché iOS non la elimina. L’originale non viene modificato. Questa ricodifica controlla GPS/EXIF e non promette anonimato completo dell’immagine.
 
-## Stato della verifica
+## 2. Scarica il modello sul telefono
 
-Sono stati verificati struttura Xcode, risorse, plist, workflow e sintassi shell nell’ambiente di consegna. Qui non sono disponibili macOS/Xcode o un iPhone collegato: compilazione Swift e prova hardware NON sono dichiarate riuscite. La prima esecuzione GitHub è la verifica effettiva. Se diventa rossa, scarica ECO-log-compilazione e conserva l’errore.
+File previsto ESATTAMENTE: **Qwen3-0.6B-Q8_0.gguf**, dal repository ufficiale Qwen.
 
-Vedi `VERIFICHE.md` per casi di prova, `LOGICA.md` per il motore e `README.md` per i dettagli tecnici.
+Pagina ufficiale:
+https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/blob/main/Qwen3-0.6B-Q8_0.gguf
+
+Download:
+https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q8_0.gguf?download=true
+
+1. Da Safari sull’iPhone apri il download, oppure aprilo dal pulsante nelle impostazioni dell’app.
+2. Attendi che il download da circa 639 MB sia completo. Controlla l’app File → Download. Non selezionare il file mentre è ancora in download.
+3. Tieni preferibilmente almeno 2 GB liberi per la copia originale e quella interna. È una precauzione pratica, non una misura della RAM utilizzata.
+4. Apri USI Pocket Security → **Importa Qwen GGUF** e scegli il file da File.
+5. L’app copia il modello, verifica header/dimensione/SHA-256 e poi lo carica in memoria. Attendi **Qwen locale pronto · CPU**.
+6. Scrivi una domanda breve, per esempio “Spiegami cos’è un motore elettrico in tre frasi”.
+7. Dopo importazione e caricamento puoi provare la chat in modalità aereo. Non vengono inviate richieste di inferenza a un server.
+
+Puoi anche scaricare il GGUF sul PC e trasferirlo in File su iPhone con un metodo a tua scelta; non va importato in Sideloadly e non va caricato su GitHub.
+
+## Uso quotidiano
+
+- Al riavvio il file modello resta sul telefono: premi Carica Qwen per metterlo in RAM.
+- Stop interrompe una risposta. Libera memoria conserva il modello ma libera il motore.
+- Nuova chat cancella la cronologia dopo conferma; usa questa funzione se il contesto diventa troppo lungo.
+- Massimo 1000 caratteri per messaggio, contesto 2048 token, massimo 256 token di risposta. La cronologia recente passata al modello è più corta della cronologia visibile.
+- La v0.2 usa CPU con Accelerate; non usa Metal/GPU. Velocità, RAM, batteria e temperatura vanno misurate sul tuo iPhone. Le prestazioni non sono state ancora testate.
+- Qwen 0.6B è piccolo: può dare risposte sbagliate o poco precise, anche in italiano. Non è equivalente a un grande modello cloud.
+
+## Limiti e problemi
+
+Non è un antivirus di sistema; non legge altre app, password, messaggi o traffico altrui. Non modifica impostazioni iOS. Non trova la posizione di altri telefoni e non attiva scansioni tramite il modello.
+
+Build rossa: apri il PRIMO step rosso e copia l’errore specifico, oppure scarica l’artifact **PocketAI-log-compilazione**. “Exit code 65” da solo non identifica la causa.
+
+Questo progetto non è stato compilato con Xcode o provato su un iPhone qui. Vedi VERIFICHE.md per distinguere i controlli eseguiti dai test ancora necessari. Non sono garantite prestazioni Qwen, lettura di ogni QR o rimozione di ogni possibile informazione incorporata in un’immagine.
