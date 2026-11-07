@@ -1,23 +1,24 @@
-# USI Pocket Security 0.2.1
+# USI Pocket Security 0.3
 
-App nativa SwiftUI iOS 16+, pensata per iPhone 15. Evoluzione della chat locale Pocket AI: Qwen3-0.6B Q8_0 con llama.cpp CPU e cinque strumenti espliciti, utilizzabili senza modello.
+App nativa iOS 16+, pensata per iPhone 15: chat locale Qwen3-0.6B-Q8_0 + sicurezza, Web, voce e strumenti deterministici.
 
-- URL: parsing locale, host e indizi; nessuna richiesta al sito.
-- QR: Vision su foto selezionata, nessuna azione automatica.
-- SHA-256: CryptoKit, lettura a blocchi e confronto con riferimento.
-- Foto: ricodifica ImageIO JPEG, controllo assenza GPS/EXIF prima della condivisione.
-- LAN: Network.framework, un IPv4 RFC1918 scelto, connessioni TCP limitate e annullabili.
+- Qwen/llama.cpp CPU con Accelerate, nessun server di inferenza. Chat con contesto recente opzionale, risposte senza saluti automatici e modalità Approfondisci (256/384 token).
+- Richieste prezzo singolo asset riconosciute: Coinbase Spot (BTC, ETH, SOL, AVAX, DOGE; EUR/USD), importo e fonte visualizzati direttamente. Nessuna fallback al modello per inventare prezzi in caso di errore.
+- Web: WKWebView HTTPS, sessione non persistente; ricerca DuckDuckGo e lettura esplicita di testo selezionato/pagina, anteprima e fonte allegata alla prossima domanda. Nessun accesso alla sessione del browser esterno.
+- Voce: SFSpeechRecognizer + AVAudioEngine, 45 secondi, locale se disponibile, fallback Apple online solo se consentito; trascrizione rivista e inviata. AVSpeechSynthesizer per risposta letta su richiesta o automaticamente.
+- Calcolatore aritmetico locale: parser senza eval, precedenza, potenze, parentesi e controlli errori.
+- Strumenti sicurezza invariati: URL, QR, SHA-256, JPEG senza GPS/EXIF, connessioni TCP a singolo host privato autorizzato.
 
-Chat e Sicurezza condividono solo estratti di report richiesti dall’utente. Nessuna esecuzione di codice o tool chiamato dal modello. UI scura con accenti mint, icona esistente CPU locale. Bundle ID invariato: com.usino.pocketai. Build 2, versione 0.2.
+## Build e installazione
 
-Parti da **INIZIA_QUI.md**. Workflow: **USI Pocket Security - Crea IPA**. Artifact: **PocketAI-IPA-da-firmare**, contenente IPA unsigned da firmare con Sideloadly. Modello separato, non incluso.
+Leggi **INIZIA_QUI.md**. GitHub Actions macos-15 → workflow **USI Pocket Security - Crea IPA** → artifact **PocketAI-IPA-da-firmare** → Sideloadly Windows. Versione 0.3/build 4, bundle ID `com.usino.pocketai`, fix LIBRARY_SEARCH_PATHS Vendor preservato. Nessuna chiave o credenziale inclusa; GGUF scaricato separatamente dal repository ufficiale Qwen.
 
-## Architettura
+Nuovi sorgenti: OnlineTools.swift, LocalCalculator.swift, VoiceController.swift, BrowserView.swift. Il generatore elenca automaticamente tutti i sorgenti. Info.plist include Microfono, Speech e Rete locale. La cronologia precedente con soli role/text/id rimane decodificabile; sourceURL/sourceTitle sono opzionali.
 
-`SecurityRules.swift`: parsing, confini IPv4, normalizzazione hash e routing esplicito. `SecurityFiles.swift`: hash e ricodifica. `LocalPortProbe.swift`: connessioni seriali TCP con timeout. `SecurityViews.swift`: controlli e report. `PocketRootView`: schede e passaggio bozza alla chat. `PromptBuilder`: contesto limitato, delimitatori ChatML e visualizzazione senza think. `NativeEngine` e bridge C++: inference CPU locale già presente.
+## Vincoli
 
-Solo permesso Rete locale aggiunto. PhotosPicker non richiede accesso completo alla libreria, né fotocamera. Nessun entitlement multicast o scansione Wi-Fi. Non inviare report o credenziali personali al repository.
+Qwen0.6B non diventa un modello più grande collegandolo a Internet. Non sono stati misurati ragionamento, velocità, memoria o batteria della versione nuova. La ricerca generale è mediata dall’utente e limitata a estratti; il modello non può controllare browser o altre app autonomamente. Nessun acquisto di servizi AI a pagamento attivato. Servizi web e Apple possono richiedere rete e rispettivi limiti.
 
-Dipendenza motore fissata a llama.cpp b6000, commit 4762ad7316dcdec20016ab5985fb46a27902204d, MIT (licenza inclusa). Modello ufficiale Qwen3-0.6B-GGUF Q8_0, Apache 2.0, verificato dall’importatore con SHA-256. Nessuna chiave API o servizio AI a pagamento.
+Motore: llama.cpp b6000, commit 4762ad7316dcdec20016ab5985fb46a27902204d (MIT inclusa). Modello Qwen3-0.6B-GGUF Q8_0, Apache2.0, impronta verificata dall’importatore.
 
-Non compilato con Xcode in questo ambiente. Stato delle verifiche: **VERIFICHE.md**.
+Stato dei controlli: **VERIFICHE.md**. Nuova build iOS e prove vocali/browser ancora da eseguire.

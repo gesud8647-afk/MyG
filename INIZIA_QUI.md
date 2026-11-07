@@ -1,55 +1,82 @@
-# USI Pocket Security 0.2.1 — iPhone 15
+# Aggiornamento 0.3.1 — Azioni assistente
 
-Questo ZIP contiene il progetto aggiornato di Pocket AI e il workflow GitHub. Non contiene un IPA già compilato o il modello GGUF. L’app ha due schede: Chat e Sicurezza; i cinque strumenti funzionano anche senza Qwen.
+Nuova scheda Azioni: apertura WhatsApp, preparazione messaggio a numero internazionale, destinazione Mappe e avvio confermato di un Comando Rapido già installato. Puoi dettare le richieste esatte elencate nella schermata; dopo la trascrizione premi Invia. I campi vengono compilati da te, non automaticamente dall’AI. Il testo del messaggio non viene inviato automaticamente.
 
-## Aggiornamento 0.2.1 — risposte che ripetono il saluto
+Per Comandi Rapidi: crea il comando nell’app Apple, assegna un nome, copia quel nome nel campo della scheda Azioni. L’app ricorda il nome e può avviare il comando con un testo di input facoltativo. Il comando deve essere configurato per accettare quell’input. Qwen può fornire istruzioni, non creare/installare silenziosamente il comando. Verifica le azioni del comando prima dell’avvio.
 
-Sostituisci il contenuto del progetto con questo pacchetto, incluso scripts e tests. Mantieni il workflow già fornito. Compila su GitHub e reinstalla l’IPA con stesso Apple ID e impostazioni Sideloadly. Non disinstallare l’app: il GGUF già importato può essere conservato nell’aggiornamento.
+Non include ancora il selettore Qwen1.7B, importazione documenti o confronto di due fonti: il modello supportato rimane lo 0.6B. Non vengono simulate capacità di controllo del sistema iOS. La lettura automatica delle risposte è già disponibile nelle impostazioni Chat. Le azioni mostrano un’anteprima nei campi e richiedono il pulsante di conferma; non è un dialogo vocale autonomo che raccoglie tutti i parametri.
 
-Il prompt ora richiede risposte dirette senza saluti automatici. Per impostazione iniziale ogni domanda viene inviata separatamente: la chat precedente rimane visibile/salvata ma non entra nel prompt. In Chat → ingranaggio → Contesto della risposta puoi attivare **Usa messaggi precedenti** quando vuoi conversare con riferimenti al passato. Lo stato viene salvato. Un nuovo invio non interrompe o altera risposte già generate; il modello può comunque sbagliare.
+Aggiorna l’intero progetto e compila come descritto sotto. Versione effettiva 0.3.1/build5; stesso bundle ID. Nuova build Xcode e apertura delle tre app da verificare sul dispositivo.
 
-Rimane incluso il fix del percorso Vendor per il linker. Versione app 0.2.1, build 3, bundle ID invariato. Nessun nuovo download del modello richiesto. La correzione va ancora provata sul telefono; non è una diagnosi certa del comportamento segnalato.
+# USI Pocket Security 0.3 — Web, voce, crypto e calcoli
 
-## 1. Compila e installa da Windows
+Il progetto contiene la chat Qwen locale e le schede Sicurezza e Web. Il modello rimane Qwen3-0.6B Q8_0: Internet aggiunge informazioni e gli strumenti aggiungono capacità precise, ma non aumentano i parametri o l’intelligenza generale del modello.
 
-1. Estrai lo ZIP e apri la cartella PocketAI estratta.
-2. Apri il repository GitHub usato per Pocket AI. Se non lo hai ancora creato, creane uno nuovo chiamato PocketAI, anche privato. Non usare il repository My G o ECO.
-3. Carica il CONTENUTO: cartella `PocketAI` (sorgenti), `PocketAI.xcodeproj`, `scripts`, `tests`, documenti e licenza. Sostituisci i file omonimi e aggiungi i nuovi; non mettere tutto dentro un’ulteriore cartella contenitore nel repository.
-4. Aggiorna anche `.github/workflows/build-ios.yml`. Se Upload non mostra la cartella nascosta, apri il workflow su GitHub e sostituisci tutto il testo con quello del file nello ZIP. Se manca, Add file → Create new file e usa esattamente quel percorso. Non incollare delimitatori Markdown.
-5. Commit changes. Nella pagina principale devi vedere `PocketAI`, `scripts`, `tests` e `PocketAI.xcodeproj` allo stesso livello.
-6. Actions → **USI Pocket Security - Crea IPA**. Parte al commit su main/master, oppure Run workflow → main → Run workflow.
-7. Aspetta il job verde. Il runner macOS compila llama.cpp e l’app, con limite 45 minuti. Valgono le quote/costi GitHub del tuo piano; non servono chiavi AI o credenziali Apple nel repository.
-8. Summary → Artifacts → **PocketAI-IPA-da-firmare**. Estrai il download: trovi **PocketAI-unsigned.ipa**.
-9. Collega e sblocca iPhone. Trascina l’IPA in Sideloadly e firma con il tuo Apple ID come prima. Per aggiornare Pocket AI usa lo stesso Apple ID e le stesse impostazioni dell’identificativo app. Il bundle sorgente rimane `com.usino.pocketai`.
-10. Non disinstallare prima l’app se vuoi conservare chat e modello: la disinstallazione elimina i suoi dati. Verifica che Sideloadly aggiorni l’app esistente. Il nome sotto l’icona sarà **USI Security**.
+## Aggiorna da Windows
 
-Non si aggiorna automaticamente al commit GitHub: ogni nuova versione va compilata e reinstallata con Sideloadly. La procedura di rinnovo firma è distinta dall’aggiornamento del codice.
+1. Estrai lo ZIP, apri la cartella PocketAI esterna e carica il suo CONTENUTO nel repository che usi già per Pocket Security, sostituendo i file omonimi e aggiungendo i nuovi.
+2. Alla radice del repository devono esserci la cartella sorgenti `PocketAI`, `PocketAI.xcodeproj`, `scripts` e `tests`. Non aggiungere un’altra cartella contenitore.
+3. Includi `.github/workflows/build-ios.yml`. Se il browser non la mostra, apri quel percorso su GitHub e sostituisci il contenuto con il file nello ZIP. Se manca, Add file → Create new file e usa quel percorso esatto.
+4. Commit changes → Actions → **USI Pocket Security - Crea IPA**. In alternativa Run workflow sul branch aggiornato. Il workflow mantiene macos-15 e il fix del linker Vendor.
+5. Attendi il verde → Summary → Artifacts → **PocketAI-IPA-da-firmare**. Estrai **PocketAI-unsigned.ipa**.
+6. Installa con Sideloadly usando stesso Apple ID e impostazioni dell’identificativo già usate. Non disinstallare prima l’app se vuoi conservare chat e GGUF.
+7. Nome sotto l’icona: USI Security. Versione 0.3, build 4; bundle ID sorgente sempre `com.usino.pocketai`.
 
-## Uso degli strumenti
+Lo ZIP contiene sorgenti, non un IPA già compilato. Il GGUF è separato; se già importato e aggiornamento eseguito sulla stessa app, non va riscaricato. GitHub non aggiorna automaticamente l’app installata: servono compilazione e Sideloadly. Quote e costi runner dipendono dal tuo piano GitHub.
 
-| Strumento | Uso e risultato | Limite |
-|---|---|---|
-| Analizza link | Incolla URL completo → Analizza. Mostra host effettivo e indizi strutturali. | Nessuna apertura, reputazione, redirect o verifica certificato. Nessun verdetto “sicuro”. |
-| QR da foto | Scegli un’immagine → legge il testo del QR con Vision. URL ispezionabile separatamente. | Non apre link o Wi-Fi automaticamente. Una lettura non autentica il mittente. |
-| SHA-256 | Scegli un file e, se disponibile, incolla l’hash ufficiale del produttore. | Identità del file rispetto al riferimento, non antivirus. Massimo 2 GB. |
-| Foto senza metadati | Scegli foto → ricodifica JPEG → controlla assenza dizionari GPS/EXIF → Esporta. | Copia fino a 4096 px; possibili perdita di qualità/HDR/animazione. Dati visibili nell’immagine restano. |
-| Rete locale | Inserisci un IPv4 privato noto, seleziona porte, conferma autorizzazione → Avvia. | Un host, massimo sei porte selezionabili, 4 secondi per porta; nessuna autenticazione. |
+## Prezzi aggiornati in chat
 
-Il controllo TCP usa gli intervalli privati 10/8, 172.16/12 e 192.168/16. Sono esclusi per prudenza gli indirizzi che terminano in .0 e .255, anche se in alcune reti possono essere host validi. Non accetta nomi DNS, IP pubblici o IPv6. Non identifica automaticamente i dispositivi. Cerca l’indirizzo del tuo accessorio nell’app del produttore o nella pagina dispositivi del tuo router. Una porta aperta non significa vulnerabilità.
+Scrivi o detta una singola richiesta:
 
-Consenti **Rete locale** al primo controllo. Se la richiesta compare durante il timeout, autorizza e ripeti. Background e uscita dalla schermata interrompono il controllo. Un errore può dipendere da firewall, permessi o rete: non dimostra che la porta sia chiusa.
+- “Quanto vale BTC in euro?”
+- “Prezzo Ethereum in dollari”
+- `/prezzo SOL EUR`
 
-Da Chat puoi usare `/link https://esempio.it`, `/qr`, `/hash`, `/foto`, `/rete`: aprono la schermata corrispondente, senza avviare operazioni. Non occorre caricare Qwen per questi comandi.
+Asset supportati in questa versione: BTC, ETH, SOL, AVAX, DOGE. Valute: EUR e USD, con EUR predefinito. Per una richiesta riconosciuta l’app invia soltanto la coppia a Coinbase Spot, senza la cronologia. Mostra importo ricevuto, link alla fonte e ora di ricezione. Non è un flusso continuo: invia di nuovo la richiesta per aggiornare. L’ora indica la ricezione dell’app, non un timestamp di mercato fornito dalla risposta API.
 
-Dopo un controllo, **Prepara spiegazione con Qwen** mette un estratto del report nella bozza Chat. Rivedi la bozza, carica Qwen se necessario e premi Invia. Le spiegazioni non sono nuovi controlli e possono essere imprecise. Il modello non riceve le foto o i file originali.
+Funziona anche senza Qwen caricato. La quotazione non viene riscritta dal modello. Errori, timeout, rete assente, asset non riconosciuti o richieste ambigue non producono un prezzo inventato: viene mostrato un messaggio. La copertura in linguaggio naturale è semplice, non universale. Per altri prezzi usa il browser.
 
-## Dati e condivisione
+In ingranaggio → Internet e voce puoi disattivare **Prezzi crypto online**. Questo non disabilita il browser né i link esterni. L’API pubblica documentata non richiede credenziali nel codice; disponibilità e limiti del servizio possono cambiare. Nessun servizio AI a pagamento è attivato.
 
-- I controlli lavorano localmente; solo il controllo TCP effettua connessioni al tuo host scelto. La scelta di file/foto iCloud può richiedere il download Apple.
-- Risultati e QR restano nella schermata in memoria, senza archivio automatico. Se mandi un report alla chat, il testo viene salvato nella cronologia locale già prevista dall’app.
-- Nel report QR vengono omessi testo generico e credenziali Wi-Fi; il QR completo rimane leggibile nella schermata. Nei report URL sono omessi i valori dei parametri, ma host e nomi dei parametri possono comunque contenere informazioni personali.
-- Condividi report o Esporta copia apre il pannello iOS: scegli tu destinatario/app, anche AirDrop se disponibile. Il destinatario deve accettare quando richiesto.
-- Le copie JPEG temporanee possono restare nella cache finché iOS non la elimina. L’originale non viene modificato. Questa ricodifica controlla GPS/EXIF e non promette anonimato completo dell’immagine.
+## Cercare su Internet e far leggere una fonte a Qwen
+
+1. Apri **Web**, oppure dalla chat invia `/cerca notizie di oggi ad Alba`.
+2. Inserisci una ricerca (DuckDuckGo) o un indirizzo completo HTTPS e premi Vai.
+3. Apri la pagina che vuoi consultare. Puoi selezionare il passaggio pertinente nella pagina.
+4. Premi **Leggi testo per Qwen**. Se hai selezionato testo, viene preferito; altrimenti viene preso l’inizio del testo della pagina.
+5. Rivedi/modifica l’estratto (massimo 1200 caratteri) e premi **Allega alla prossima domanda**.
+6. In Chat carica Qwen, scrivi la domanda, per esempio “Riassumi questi fatti e indica cosa non è confermato”, e invia.
+
+La risposta mostra il collegamento alla pagina scelta e quando l’hai letta. Il link indica la fonte allegata, non dimostra che ogni frase del modello sia supportata. Non è ricerca autonoma illimitata: Qwen non apre da solo pagine o tutti i risultati. Alcuni siti, paywall e documenti non sono leggibili; per testi lunghi seleziona un estratto preciso. I link nelle risposte aprono il browser scelto da iOS; la scheda Web è un browser interno separato.
+
+La sessione Web usa dati non persistenti e non importa la sessione/cookie di Safari o di altre app. I siti e il motore di ricerca ricevono le normali richieste Internet. Non allegare password o dati di account: la schermata di anteprima permette di rimuoverli. Il testo della pagina è trattato come contenuto non attendibile, senza strumenti di esecuzione collegati al modello.
+
+## Conversazione a voce
+
+1. In Chat premi **Parla** e consenti microfono e riconoscimento vocale quando iOS li richiede.
+2. Detta in italiano. Il testo compare nella bozza; premi **Ferma dettatura** oppure attendi la fine (limite 45 secondi).
+3. Rivedi la trascrizione e premi Invia: può essere una domanda, una richiesta prezzo o un comando.
+4. Tocca **Ascolta** sotto una risposta per sentirla. **Ferma voce** interrompe la lettura.
+5. Per ascoltare ogni risposta nuova: ingranaggio → **Leggi automaticamente le risposte**.
+
+La dettatura preferisce il riconoscimento locale italiano di iOS. Se il telefono non lo supporta/non è disponibile, l’app non invia automaticamente l’audio a un server: puoi consentire il servizio Apple online nelle impostazioni dell’app. Questo comporta possibile elaborazione dell’audio da Apple. Anche senza tale opzione restano necessarie le autorizzazioni iOS. Nessuna registrazione audio è salvata dall’app; il testo inviato viene salvato nella cronologia.
+
+Il microfono non resta in ascolto in background. Uscita dalla Chat, background e interruzioni audio fermano voce/dettatura. Non c’è parola di attivazione o conversazione continua automatica. La lettura usa le voci italiane disponibili su iOS; disponibilità e qualità dipendono dal dispositivo. Se rifiuti i permessi puoi continuare con la tastiera.
+
+## Calcoli e logica
+
+- `/calcola 7*8` → calcolo numerico eseguito dal codice.
+- `/calcola 10000*(1+0,06)^30` → formula di interesse composto a capitalizzazione annuale (esempio matematico).
+- Operatori: +, -, *, /, ^, parentesi; virgola o punto decimale; massimo 160 caratteri. Non interpreta automaticamente tassi, unità o percentuali da frasi: scrivi la formula.
+- Il calcolatore non esegue JavaScript/codice. Rifiuta divisione per zero, caratteri non ammessi, valori non finiti e formule incomplete. Precisione Double, risultato visualizzato fino a 12 cifre significative; non è un motore di contabilità o algebra simbolica.
+- **Approfondisci** richiede risposta, breve metodo verificabile e limiti, fino a 384 token anziché 256. Non cambia modello né garantisce ragionamento migliore. Richiede Qwen caricato e può essere più lento.
+- **Usa messaggi precedenti** attiva il contesto recente per conversare. Una nuova installazione lo propone acceso; un aggiornamento conserva la tua scelta precedente, anche se era spento nella 0.2.1. Se vuoi riferimenti ai messaggi prima, controlla l’interruttore nell’ingranaggio. Il contesto rimane breve, non memoria illimitata.
+
+## Sicurezza già inclusa
+
+Analisi locale URL, QR da foto, SHA-256 a blocchi, copie JPEG con controllo assenza GPS/EXIF, connessioni TCP a un singolo IPv4 privato autorizzato. Comandi: `/link URL`, `/qr`, `/hash`, `/foto`, `/rete`. Funzionano senza Qwen. Le azioni richiedono i pulsanti delle schermate; le risposte del modello non le eseguono.
+
+Condividi report ed Esporta copia usano il pannello iOS, anche AirDrop se disponibile e accettato dal destinatario. Non è antivirus di sistema e non localizza altri telefoni. Una porta raggiungibile non dimostra una vulnerabilità. Le copie foto possono perdere qualità/HDR/animazione e restare temporaneamente in cache; non rimuovono i dati visibili nell’immagine.
 
 ## 2. Scarica il modello sul telefono
 
@@ -76,14 +103,20 @@ Puoi anche scaricare il GGUF sul PC e trasferirlo in File su iPhone con un metod
 - Al riavvio il file modello resta sul telefono: premi Carica Qwen per metterlo in RAM.
 - Stop interrompe una risposta. Libera memoria conserva il modello ma libera il motore.
 - Nuova chat cancella la cronologia dopo conferma; usa questa funzione se il contesto diventa troppo lungo.
-- Massimo 1000 caratteri per messaggio, contesto 2048 token, massimo 256 token di risposta. La cronologia recente passata al modello è più corta della cronologia visibile.
-- La v0.2 usa CPU con Accelerate; non usa Metal/GPU. Velocità, RAM, batteria e temperatura vanno misurate sul tuo iPhone. Le prestazioni non sono state ancora testate.
+- Massimo 1000 caratteri per messaggio, contesto 2048 token, massimo 256 token di risposta, o 384 con Approfondisci. La cronologia recente passata al modello è più corta della cronologia visibile.
+- La v0.3 usa CPU con Accelerate; non usa Metal/GPU. Velocità, RAM, batteria e temperatura vanno misurate sul tuo iPhone. Le prestazioni non sono state ancora testate.
 - Qwen 0.6B è piccolo: può dare risposte sbagliate o poco precise, anche in italiano. Non è equivalente a un grande modello cloud.
 
-## Limiti e problemi
+## Dati, limiti e verifiche
 
-Non è un antivirus di sistema; non legge altre app, password, messaggi o traffico altrui. Non modifica impostazioni iOS. Non trova la posizione di altri telefoni e non attiva scansioni tramite il modello.
+Chat e link alle fonti ricevute sono salvati localmente nell’ultima cronologia, fino a 50 messaggi, e possono rientrare nei backup iOS. La fonte in attesa e il suo estratto restano in memoria; il modello può ripeterne parti nella risposta salvata. Il GGUF copiato è escluso dai backup. File/foto iCloud possono essere scaricati dal selettore Apple.
 
-Build rossa: apri il PRIMO step rosso e copia l’errore specifico, oppure scarica l’artifact **PocketAI-log-compilazione**. “Exit code 65” da solo non identifica la causa.
+Qui sono stati verificati struttura progetto, permessi, script e risposta live JSON dell’endpoint BTC-EUR. Non disponibili Xcode/Swift o un iPhone collegato: nuova compilazione, test Swift aggiunti, browser, riconoscimento/lettura voce e comportamento del modello restano da verificare su GitHub e sul dispositivo. Vedi VERIFICHE.md. Nessuna misura di prestazioni o miglioramento del ragionamento è dichiarata.
 
-Questo progetto non è stato compilato con Xcode o provato su un iPhone qui. Vedi VERIFICHE.md per distinguere i controlli eseguiti dai test ancora necessari. Non sono garantite prestazioni Qwen, lettura di ogni QR o rimozione di ogni possibile informazione incorporata in un’immagine.
+Se Actions è rosso, apri il primo step rosso e copia l’errore preciso o scarica PocketAI-log-compilazione. “Exit code 65” da solo non identifica il problema. I test già passati nella 0.2 non sostituiscono quelli della nuova versione.
+
+## Documentazione tecnica consultata
+
+- Coinbase Spot: https://docs.cdp.coinbase.com/coinbase-app/track-apis/prices
+- Apple Speech: https://developer.apple.com/documentation/speech/recognizing-speech-in-live-audio
+- Riconoscimento locale: https://developer.apple.com/documentation/speech/sfspeechrecognizer/supportsondevicerecognition

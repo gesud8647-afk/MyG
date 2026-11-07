@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 xcodebuild -version
 scratch_checks=$(mktemp -d)
 trap 'rm -rf "$scratch_checks"' EXIT
-swiftc PocketAI/PromptBuilder.swift PocketAI/SecurityRules.swift tests/PromptChecks/main.swift -o "$scratch_checks/prompt-checks"
+swiftc PocketAI/PromptBuilder.swift PocketAI/SecurityRules.swift PocketAI/OnlineTools.swift PocketAI/LocalCalculator.swift tests/PromptChecks/main.swift -o "$scratch_checks/prompt-checks"
 "$scratch_checks/prompt-checks"
 bash scripts/build-engine.sh
 python3 scripts/generate_project.py
