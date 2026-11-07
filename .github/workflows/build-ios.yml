@@ -1,4 +1,4 @@
-name: ECO - Crea IPA
+name: USI Pocket Security - Crea IPA
 
 on:
   push:
@@ -9,20 +9,22 @@ permissions:
   contents: read
 
 concurrency:
-  group: eco-${{ github.ref }}
+  group: pocketai-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Compilazione ECO per iPhone
+    name: Compilazione Qwen locale iPhone
     runs-on: macos-15
-    timeout-minutes: 25
+    timeout-minutes: 45
     steps:
       - name: Scarica progetto
         uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - name: Verifica regole e compila IPA
+      - name: Verifica CMake
+        run: cmake --version
+      - name: Compila motore e app
         shell: bash
         run: |
           set -o pipefail
@@ -30,15 +32,15 @@ jobs:
       - name: Scarica IPA da firmare
         uses: actions/upload-artifact@v6
         with:
-          name: ECO-IPA-da-firmare
-          path: dist/ECO-unsigned.ipa
+          name: PocketAI-IPA-da-firmare
+          path: dist/PocketAI-unsigned.ipa
           if-no-files-found: error
           retention-days: 7
       - name: Conserva log
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: ECO-log-compilazione
+          name: PocketAI-log-compilazione
           path: build.log
           if-no-files-found: ignore
           retention-days: 7
